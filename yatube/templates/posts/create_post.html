@@ -1,0 +1,36 @@
+{% extends "includes/form_style.html" %}
+{% block title %}
+  {% if is_edit %}
+    Редактировать запись
+  {% else %}
+    Добавить запись
+  {% endif %}
+{% endblock %}
+{% block card_header %}
+  {% if is_edit %}
+    Редактировать запись
+  {% else %}
+    Добавить запись
+  {% endif %}
+{% endblock %}
+{% block card_body %}
+  {% include 'includes/errors_check.html' %}
+  {% if is_edit %}
+    <form method="post" enctype="multipart/form-data" action="{% url 'posts:post_edit' post_id=form.instance.id %}">
+  {% else %}
+    <form method="post" enctype="multipart/form-data" action="{% url 'posts:post_create' %}">
+  {% endif %}
+  {% include 'includes/form_content.html' %}
+{% endblock %}
+{% block buttons %}
+  <div class="d-flex justify-content-end">
+    <button type="submit" class="btn btn-primary">
+      {% if is_edit %}
+        Сохранить
+      {% else %}
+        Добавить
+      {% endif %}
+    </button>
+  </div>
+  </form>
+{% endblock %}

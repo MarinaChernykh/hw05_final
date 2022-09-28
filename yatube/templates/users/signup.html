@@ -1,0 +1,16 @@
+{% extends "includes/form_style.html" %}
+{% block title %}Зарегистрироваться{% endblock %}
+{% block card_header %}Зарегистрироваться{% endblock %}
+{% block card_body %}
+  {% include 'includes/errors_check.html' %}
+  <form method="post" action="{% url 'users:signup' %}">
+  {% include 'includes/form_content.html' %}
+{% endblock %}
+{% block buttons %}
+  <div class="col-md-6 offset-md-4">
+    <button type="submit" class="btn btn-primary">
+      Зарегистрироваться
+    </button>
+  </div>
+  </form>
+{% endblock %}
