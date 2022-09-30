@@ -81,9 +81,21 @@ class PostCreateFormTests(TestCase):
     def test_edit_post(self):
         """Валидная форма редактирует запись в Post."""
         posts_count = Post.objects.count()
+        small_new_gif = (
+            b'\x47\x49\x46\x38\x39\x61\x01\x00'
+            b'\x01\x00\x00\x00\x00\x21\xf9\x04'
+            b'\x01\x0a\x00\x01\x00\x2c\x00\x00'
+            b'\x00\x00\x01\x00\x01\x00\x00\x02'
+        )
+        uploaded = SimpleUploadedFile(
+            name='small_new.gif',
+            content=small_new_gif,
+            content_type='image/gif',
+        )
         form_data = {
             'text': 'Тестовый пост 3',
             'group': self.group.pk,
+            'image': uploaded,
         }
         response = self.authorized_author.post(
             reverse('posts:post_edit', kwargs={'post_id': f'{self.post.pk}'}),
@@ -99,6 +111,7 @@ class PostCreateFormTests(TestCase):
         self.latest_post = Post.objects.latest('pub_date')
         self.assertEqual(self.latest_post.author.username, 'Ivanov')
         self.assertEqual(self.latest_post.text, 'Тестовый пост 3')
+        self.assertEqual(self.latest_post.image, 'posts/small_new.gif')
 
     def test_create_comment(self):
         """Валидная форма создает комментарий."""

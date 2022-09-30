@@ -299,35 +299,45 @@ class FollowersViewsTest(TestCase):
         self.authorized_author = Client()
         self.authorized_author.force_login(self.author)
 
-    def test_follow_and_unfollow_views(self):
+    def test_user_can_follow_author(self):
         """
-        Авториз. пользователь может подписаться на другого автора
-        и не может подписаться на себя.
-        Авториз. пользователь может отписаться от авторов,
-        на которых подписан.
+        Авториз. пользователь может подписаться на другого автора.
         """
-        followings_count = Follow.objects.filter(user=self.user).count()
+        following = Follow.objects.filter(user=self.user, author=self.author)
+        self.assertFalse(following.exists())
         self.authorized_client.get(
             reverse('posts:profile_follow',
                     kwargs={'username': f'{self.author}'})
         )
-        self.assertEqual(
-            Follow.objects.filter(user=self.user).count(),
-            followings_count + 1
-        )
+        self.assertTrue(following.exists())
+
+    def test_user_cant_follow_himself(self):
+        """
+        Авториз. пользователь не может подписаться на самого себя.
+        """
         self.authorized_client.get(
             reverse('posts:profile_follow',
                     kwargs={'username': f'{self.user}'})
         )
-        self.assertNotEqual(
-            Follow.objects.filter(user=self.user).count(),
-            followings_count + 2
+        following = Follow.objects.filter(user=self.user, author=self.user)
+        self.assertFalse(following.exists())
+
+    def test_unfollow_views(self):
+        """
+        Авториз. пользователь может отписаться от авторов,
+        на которых подписан.
+        """
+        Follow.objects.create(
+            user=self.user,
+            author=self.author,
         )
+        following = Follow.objects.filter(user=self.user, author=self.author)
+        self.assertTrue(following.exists())
         self.authorized_client.get(
             reverse('posts:profile_unfollow',
                     kwargs={'username': f'{self.author}'})
         )
-        self.assertEqual(Follow.objects.filter(user=self.user).count(), 0)
+        self.assertFalse(following.exists())
 
     def test_follow_index_page(self):
         """

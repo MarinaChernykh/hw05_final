@@ -7,7 +7,7 @@ from .models import Group, Post, Follow, User
 from .forms import PostForm, CommentForm
 
 
-@cache_page(20 * 1, key_prefix='index_page')
+@cache_page(20, key_prefix='index_page')
 def index(request):
     post_list = Post.objects.all()
     paginator = Paginator(post_list, 10)
@@ -39,12 +39,9 @@ def profile(request, username):
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    if request.user.is_authenticated:
-        following = Follow.objects.filter(
-            user=request.user, author=author
-        ).exists()
-    else:
-        following = False
+    following = (Follow.objects.filter(
+        user=request.user, author=author).exists()
+        if request.user.is_authenticated else False)
     context = {
         'author': author,
         'user': request.user,
@@ -57,7 +54,7 @@ def profile(request, username):
 
 def post_detail(request, post_id):
     post = get_object_or_404(Post, id=post_id)
-    title = post.text[:30]
+    title = post.text
     author = post.author
     counter = (Post.objects.select_related('author').
                filter(author=author).count())
@@ -134,9 +131,8 @@ def follow_index(request):
 def profile_follow(request, username):
     user = request.user
     author = get_object_or_404(User, username=username)
-    follow_check = Follow.objects.filter(user=user, author=author).exists()
-    if (user.username != username and not follow_check):
-        Follow.objects.create(user=user, author=author)
+    if user.username != username:
+        Follow.objects.get_or_create(user=user, author=author)
     return redirect('posts:profile', username)
 
 
@@ -144,6 +140,5 @@ def profile_follow(request, username):
 def profile_unfollow(request, username):
     user = request.user
     author = get_object_or_404(User, username=username)
-    if Follow.objects.filter(user=user, author=author).exists():
-        Follow.objects.filter(user=user, author=author).delete()
+    Follow.objects.filter(user=user, author=author).delete()
     return redirect('posts:profile', username)
