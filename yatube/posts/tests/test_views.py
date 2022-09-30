@@ -253,12 +253,10 @@ class PaginatorViewsTest(TestCase):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
         posts_qty = 14
-        post_list = []
-        for i in range(posts_qty):
-            post_list.append(Post(
-                author=self.user,
-                text=f'Тестовый пост {i}',
-                group=self.group,))
+        post_list = [Post(author=self.user,
+                          text=f'Тестовый пост {i}',
+                          group=self.group,)
+                     for i in range(posts_qty)]
         Post.objects.bulk_create(post_list)
 
     def test_pages_contains_correct_qty_of_records(self):
