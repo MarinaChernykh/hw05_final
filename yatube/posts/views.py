@@ -54,10 +54,8 @@ def profile(request, username):
 
 def post_detail(request, post_id):
     post = get_object_or_404(Post, id=post_id)
-    title = post.text
-    author = post.author
     counter = (Post.objects.select_related('author').
-               filter(author=author).count())
+               filter(author=post.author).count())
     form = CommentForm(request.POST or None)
     if form.is_valid():
         comment = form.save(commit=False)
@@ -66,8 +64,6 @@ def post_detail(request, post_id):
         return redirect('posts:post_detail', post_id=post_id)
     comments = post.comments.all()
     context = {
-        'title': title,
-        'author': author,
         'post': post,
         'counter': counter,
         'form': form,
@@ -118,8 +114,7 @@ def add_comment(request, post_id):
 
 @login_required
 def follow_index(request):
-    follow = Follow.objects.filter(user=request.user).values('author')
-    post_list = Post.objects.filter(author__in=follow)
+    post_list = Post.objects.filter(author__following__user=request.user)
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -129,16 +124,14 @@ def follow_index(request):
 
 @login_required
 def profile_follow(request, username):
-    user = request.user
     author = get_object_or_404(User, username=username)
-    if user.username != username:
-        Follow.objects.get_or_create(user=user, author=author)
+    if request.user != author:
+        Follow.objects.get_or_create(user=request.user, author=author)
     return redirect('posts:profile', username)
 
 
 @login_required
 def profile_unfollow(request, username):
-    user = request.user
     author = get_object_or_404(User, username=username)
-    Follow.objects.filter(user=user, author=author).delete()
+    Follow.objects.filter(user=request.user, author=author).delete()
     return redirect('posts:profile', username)
