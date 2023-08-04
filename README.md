@@ -22,7 +22,12 @@ source venv/bin/activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
-4. В папке с файлом manage.py выполните команду:
+4. Перейдите в папку yatube и выполните миграции:
+```
+cd yatube/
+python manage.py migrate
+```
+5. Запустите проект:
 ```
 python manage.py runserver
 ```
